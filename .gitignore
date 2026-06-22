@@ -1,0 +1,7 @@
+sdk/.vs
+sdk/DexPaprika/bin
+sdk/DexPaprika/obj
+sdk/DexPaprika.SDK/bin
+sdk/DexPaprika.SDK/obj
+sdk/DexPaprika.Tests.SDK/bin
+sdk/DexPaprika.Tests.SDK/obj

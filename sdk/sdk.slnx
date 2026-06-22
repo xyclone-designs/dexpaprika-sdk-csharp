@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="DexPaprika.SDK/DexPaprika.SDK.csproj" Id="f08e5b03-70ab-4a9c-b04c-5b04fcfe07d5" />
+  <Project Path="DexPaprika.Tests.SDK/DexPaprika.Tests.SDK.csproj" Id="91809eb1-46b6-489d-ac6c-0934ad178f25" />
+  <Project Path="DexPaprika/DexPaprika.csproj" Id="80009ad7-1ee2-4777-8fc0-275c8361a967" />
+</Solution>
