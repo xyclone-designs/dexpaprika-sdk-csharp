@@ -41,6 +41,7 @@ namespace DexPaprika.SDK.Utils
         {
             get { lock (_lock) { return _store.Count; } }
         }
+        public bool Enabled { get => _config.Enabled; set => _config.Enabled = value; }
 
         /// <summary>
         /// Retrieves the value for <paramref name="key"/>, or returns <c>default</c>
@@ -126,11 +127,25 @@ namespace DexPaprika.SDK.Utils
 
         public bool TryGetValue(string key, out T? t)
         {
-            bool h = _store.TryGetValue(key, out Entry? entry);
+            t = default;
 
-            t = entry is null ? default : entry.Data;
+            if (!_config.Enabled) return false;
 
-            return h;
+            lock (_lock)
+            {
+                if (!_store.TryGetValue(key, out Entry? entry))
+                    return false;
+
+                if (DateTime.UtcNow.Ticks > entry.ExpiresAtTicks)
+                {
+                    _store.Remove(key);
+                    return false;
+                }
+
+                t = entry.Data;
+
+                return true;
+            }
         }
 
         /// <summary>

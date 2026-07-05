@@ -1,14 +1,15 @@
 using DexPaprika.SDK.Api;
 using DexPaprika.SDK.Utils;
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
+
+using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace DexPaprika.SDK
 {
@@ -75,16 +76,12 @@ namespace DexPaprika.SDK
             Dexes = new DexesApi(this);
         }
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            PropertyNameCaseInsensitive = true
-        };
         private static string BuildCacheKey(string endpoint, Dictionary<string, object>? queryParams)
         {
             if (queryParams == null || queryParams.Count == 0)
                 return endpoint;
 
-            return $"{endpoint}:{JsonSerializer.Serialize(queryParams)}";
+            return $"{endpoint}:{JsonConvert.SerializeObject(queryParams)}";
         }
         private static async Task EnsureSuccessAsync(HttpResponseMessage response)
         {
@@ -158,7 +155,7 @@ namespace DexPaprika.SDK
 
         /// <summary>Number of entries currently in the cache.</summary>
         public int CacheSize { get => _cache.Count; }
-        public bool CacheEnabled { get; set; }
+        public bool CacheEnabled { get => _cache.Enabled; set => _cache.Enabled = value; }
         public HttpClient HttpClient { get; }
 
         /// <summary>Clears all cached responses.</summary>
@@ -178,8 +175,8 @@ namespace DexPaprika.SDK
         public async Task<T> GetAsync<T>(string endpoint, Dictionary<string, object>? queryParams = null)
         {
             var cacheKey = BuildCacheKey(endpoint, queryParams);
-
             var cached = _cache.Get(cacheKey);
+
             if (cached is T hit)
                 return hit;
 
@@ -187,14 +184,17 @@ namespace DexPaprika.SDK
             {
                 var url = BuildUrl(endpoint, queryParams);
                 var response = await HttpClient.GetAsync(url);
+
                 await EnsureSuccessAsync(response);
 
                 var json = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<T>(json, JsonOptions)
-                       ?? throw new DexPaprikaException($"Empty response for GET {endpoint}");
+                
+                return JsonConvert.DeserializeObject<T>(json) ?? throw new DexPaprikaException($"Empty response for GET {endpoint}");
+
             }, _retryConfig);
 
             _cache.Set(cacheKey, result!);
+
             return result;
         }
         /// <summary>
@@ -205,15 +205,17 @@ namespace DexPaprika.SDK
             return await RetryHelper.WithRetryAsync(async () =>
             {
                 var url = BuildUrl(endpoint, queryParams);
-                var json = JsonSerializer.Serialize(body, JsonOptions);
+                var json = JsonConvert.SerializeObject(body);
                 using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var response = await HttpClient.PostAsync(url, content);
+                
                 await EnsureSuccessAsync(response);
 
                 var responseJson = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<T>(responseJson, JsonOptions)
-                       ?? throw new DexPaprikaException($"Empty response for POST {endpoint}");
+
+                return JsonConvert.DeserializeObject<T>(json) ?? throw new DexPaprikaException($"Empty response for POST {endpoint}");
+            
             }, _retryConfig);
         }
 

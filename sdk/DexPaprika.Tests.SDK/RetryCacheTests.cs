@@ -69,7 +69,7 @@ namespace DexPaprika.Tests.SDK
                 new HttpClient(handlerMock.Object),
                 new ClientConfig
                 {
-                    Retry = new RetryConfig { MaxRetries = 2, DelaySequenceMs = new[] { 100, 200, 300 } }
+                    Retry = new RetryConfig { MaxRetries = 2, DelaySequenceMs = [100, 200, 300] }
                 }
             );
 
