@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
+
 using DexPaprika.SDK.Utils;
 
 namespace DexPaprika.SDK.Api
@@ -14,14 +16,17 @@ namespace DexPaprika.SDK.Api
     /// Initializes a new API service.
     /// </remarks>
     /// <param name="client">DexPaprika client instance.</param>
-    public abstract class BaseApi(DexPaprikaClient client)
+    public abstract partial class BaseApi(DexPaprikaClient client)
     {
+        [GeneratedRegex(@"/networks/([^/]+)")]
+        private static partial Regex ExtractNetworkIdRegex();
         private static string ExtractNetworkId(string endpoint, Dictionary<string, object>? queryParams)
         {
             if (queryParams != null && queryParams.TryGetValue("network", out var network))
                 return network?.ToString() ?? "unknown";
 
-            var match = System.Text.RegularExpressions.Regex.Match(endpoint, @"/networks/([^/]+)");
+            var match = ExtractNetworkIdRegex().Match(endpoint);
+
             return match.Success ? match.Groups[1].Value : "unknown";
         }
 
@@ -97,6 +102,10 @@ namespace DexPaprika.SDK.Api
         {
             public static readonly Options _Default = new();
             public static class Defaults { }
+            public static class Params 
+            {
+                public const string Network = "network";
+            }
         }
     }
 }

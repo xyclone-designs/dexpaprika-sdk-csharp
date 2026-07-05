@@ -94,8 +94,7 @@ namespace DexPaprika.Tests.SDK
             var history = await _client.Pools.GetOhlcvAsync(
                 pool.Chain,
                 pool.Id,
-                date,
-                new PoolsApi.GetOhlcvOptions
+                new PoolsApi.GetOhlcvOptions(date)
                 {
                     Limit = 3
                 });

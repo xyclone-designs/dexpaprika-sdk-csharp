@@ -20,10 +20,11 @@ namespace DexPaprika.SDK.Api
         }
 
         public new class Options : BaseApi.Options { }
-        public class ListOptions() : Options
+        public class ListOptions : Options
         {
             public new static readonly ListOptions _Default = new();
             public new static class Defaults { }
+            public new static class Params { }
         }
     }
 }

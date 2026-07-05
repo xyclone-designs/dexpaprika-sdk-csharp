@@ -23,8 +23,8 @@ namespace DexPaprika.SDK.Api
 
             var queryParams = new Dictionary<string, object>
             {
-                ["page"] = options.Page,
-                ["limit"] = options.Limit
+                [ListByNetworkOptions.Params.Page] = options.Page,
+                [ListByNetworkOptions.Params.Limit] = options.Limit
             };
 
             return GetAsync<DexPaginatedResponse>($"/networks/{networkId}/dexes", queryParams);
@@ -38,6 +38,11 @@ namespace DexPaprika.SDK.Api
             {
                 public const int Limit = 10;
                 public const int Page = 1;
+            }
+            public new static class Params
+            {
+                public const string Limit = "limit";
+                public const string Page = "page";
             }
 
             public int Limit { get; set; } = Defaults.Limit;

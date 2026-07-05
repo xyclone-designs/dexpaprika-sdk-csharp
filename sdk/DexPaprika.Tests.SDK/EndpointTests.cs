@@ -118,7 +118,7 @@ namespace DexPaprika.Tests.SDK
                 "ethereum",
                 [
                     "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-                "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+                    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
                 ]);
 
             Assert.Equal(2, prices.Count);
@@ -142,7 +142,7 @@ namespace DexPaprika.Tests.SDK
         {
             var ex = await Assert.ThrowsAsync<ArgumentException>(() => _client.Tokens.GetMultiPricesAsync( "ethereum", []));
 
-            Assert.Contains( "required", ex.Message, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("required", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
         [Fact]

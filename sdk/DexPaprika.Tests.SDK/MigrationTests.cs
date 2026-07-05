@@ -13,7 +13,9 @@ namespace DexPaprika.Tests.SDK
         [Fact]
         public async Task DeprecatedPoolsList_Throws()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             await Assert.ThrowsAsync<DeprecatedEndpointException>(() => _client.Pools.ListAsync());
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Theory]

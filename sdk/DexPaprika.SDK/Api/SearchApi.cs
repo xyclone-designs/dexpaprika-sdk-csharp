@@ -19,7 +19,7 @@ namespace DexPaprika.SDK.Api
         {
             var queryParams = new Dictionary<string, object>
             {
-                ["query"] = query
+                [SearchOptions.Params.Query] = query
             };
 
             return GetAsync<SearchResult>("/search", queryParams);
@@ -30,6 +30,10 @@ namespace DexPaprika.SDK.Api
         {
             public new static readonly SearchOptions _Default = new();
             public new static class Defaults { }
+            public new static class Params 
+            {
+                public const string Query = "query";
+            }
         }
     }
 }

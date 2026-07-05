@@ -172,7 +172,7 @@ namespace DexPaprika.Tests.SDK
             Assert.Equal("will-expire", valueImmediate);
 
             // Wait for expiration
-            await Task.Delay(150);
+            await Task.Delay(150, TestContext.Current.CancellationToken);
 
             // After expiration (Miss)
             bool isFoundExpired = shortCache.TryGetValue("short-lived", out var valueExpired);

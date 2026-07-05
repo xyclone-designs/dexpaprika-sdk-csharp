@@ -27,21 +27,21 @@ namespace DexPaprika.SDK.Api
 
             Dictionary<string, object> queryParams = new ()
             {
-                ["page"] = options.Page,
-                ["limit"] = options.Limit,
-                ["sort_by"] = options.SortBy,
-                ["sort_dir"] = options.SortDir
+                [FilterOptions.Params.Page] = options.Page,
+                [FilterOptions.Params.Limit] = options.Limit,
+                [FilterOptions.Params.SortBy] = options.SortBy,
+                [FilterOptions.Params.SortDir] = options.SortDir
             };
 
-            if (options.Volume24hMin.HasValue) queryParams["volume_24h_min"] = options.Volume24hMin.Value;
-            if (options.Volume24hMax.HasValue) queryParams["volume_24h_max"] = options.Volume24hMax.Value;
-            if (options.Volume7dMin.HasValue) queryParams["volume_7d_min"] = options.Volume7dMin.Value;
-            if (options.Volume7dMax.HasValue) queryParams["volume_7d_max"] = options.Volume7dMax.Value;
-            if (options.LiquidityUsdMin.HasValue) queryParams["liquidity_usd_min"] = options.LiquidityUsdMin.Value;
-            if (options.LiquidityUsdMax.HasValue) queryParams["liquidity_usd_max"] = options.LiquidityUsdMax.Value;
-            if (options.Txns24hMin.HasValue) queryParams["txns_24h_min"] = options.Txns24hMin.Value;
-            if (options.CreatedAfter is not null) queryParams["created_after"] = options.CreatedAfter;
-            if (options.CreatedBefore is not null) queryParams["created_before"] = options.CreatedBefore;
+            if (options.Volume24hMin.HasValue) queryParams[FilterOptions.Params.Volume24hMin] = options.Volume24hMin.Value;
+            if (options.Volume24hMax.HasValue) queryParams[FilterOptions.Params.Volume24hMax] = options.Volume24hMax.Value;
+            if (options.Volume7dMin.HasValue) queryParams[FilterOptions.Params.Volume7dMin] = options.Volume7dMin.Value;
+            if (options.Volume7dMax.HasValue) queryParams[FilterOptions.Params.Volume7dMax] = options.Volume7dMax.Value;
+            if (options.LiquidityUsdMin.HasValue) queryParams[FilterOptions.Params.LiquidityUsdMin] = options.LiquidityUsdMin.Value;
+            if (options.LiquidityUsdMax.HasValue) queryParams[FilterOptions.Params.LiquidityUsdMax] = options.LiquidityUsdMax.Value;
+            if (options.Txns24hMin.HasValue) queryParams[FilterOptions.Params.Txns24hMin] = options.Txns24hMin.Value;
+            if (options.CreatedAfter is not null) queryParams[FilterOptions.Params.CreatedAfter] = options.CreatedAfter;
+            if (options.CreatedBefore is not null) queryParams[FilterOptions.Params.CreatedBefore] = options.CreatedBefore;
 
             return GetAsync<PoolFilterPaginatedResponse>($"/networks/{networkId}/pools/filter", queryParams);
         }
@@ -82,10 +82,10 @@ namespace DexPaprika.SDK.Api
 
             var queryParams = new Dictionary<string, object>
             {
-                ["page"] = options.Page,
-                ["limit"] = options.Limit,
-                ["sort"] = options.Sort,
-                ["order_by"] = options.OrderBy
+                [ListByOptions.Params.Page] = options.Page,
+                [ListByOptions.Params.Limit] = options.Limit,
+                [ListByOptions.Params.Sort] = options.Sort,
+                [ListByOptions.Params.OrderBy] = options.OrderBy
             };
 
             return GetAsync<PoolPaginatedResponse>($"/networks/{networkId}/dexes/{dexId}/pools", queryParams);
@@ -108,10 +108,10 @@ namespace DexPaprika.SDK.Api
 
             var queryParams = new Dictionary<string, object>
             {
-                ["page"] = options.Page,
-                ["limit"] = options.Limit,
-                ["sort"] = options.Sort,
-                ["order_by"] = options.OrderBy
+                [ListByOptions.Params.Page] = options.Page,
+                [ListByOptions.Params.Limit] = options.Limit,
+                [ListByOptions.Params.Sort] = options.Sort,
+                [ListByOptions.Params.OrderBy] = options.OrderBy
             };
 
             return GetAsync<PoolPaginatedResponse>($"/networks/{networkId}/pools", queryParams);
@@ -126,7 +126,7 @@ namespace DexPaprika.SDK.Api
         /// <returns>Detailed pool information.</returns>
         public Task<PoolDetails> GetDetailsAsync(string networkId, string poolAddress, GetDetailsOptions? options = null)
         {
-            options ??= new GetDetailsOptions();
+            options ??= GetDetailsOptions._Default;
 
             if (string.IsNullOrEmpty(networkId))
                 throw new ArgumentException("Network ID is required.", nameof(networkId));
@@ -135,7 +135,7 @@ namespace DexPaprika.SDK.Api
 
             Dictionary<string, object> queryParams = new ()
             {
-                { "inversed", options.Inversed }
+                [GetDetailsOptions.Params.Inversed] = options.Inversed,
             };
 
             return GetAsync<PoolDetails>($"/networks/{networkId}/pools/{poolAddress}", queryParams);
@@ -151,10 +151,8 @@ namespace DexPaprika.SDK.Api
         /// <param name="end">Optional end of the time range.</param>
         /// <param name="inversed">Whether to invert the price ratio (default: false).</param>
         /// <returns>Time-series OHLCV data.</returns>
-        public Task<List<OhlcvRecord>> GetOhlcvAsync(string networkId, string poolAddress, string start, GetOhlcvOptions? options = null)
+        public Task<List<OhlcvRecord>> GetOhlcvAsync(string networkId, string poolAddress, GetOhlcvOptions options)
         {
-            options ??= new GetOhlcvOptions();
-
             if (string.IsNullOrEmpty(networkId))
                 throw new ArgumentException("Network ID is required.", nameof(networkId));
             if (string.IsNullOrEmpty(poolAddress))
@@ -162,13 +160,13 @@ namespace DexPaprika.SDK.Api
 
             Dictionary<string, object> queryParams = new()
             {
-                { "start", start },
-                { "limit", options.Limit },
-                { "interval", options.Interval },
-                { "inversed", options.Inversed }
+                [GetOhlcvOptions.Params.Start] = options.Start,
+                [GetOhlcvOptions.Params.Limit] = options.Limit,
+                [GetOhlcvOptions.Params.Interval] = options.Interval,
+                [GetOhlcvOptions.Params.Inversed] = options.Inversed,
             };
 
-            if (options.End != null) queryParams["end"] = options.End;
+            if (options.End != null) queryParams[GetOhlcvOptions.Params.End] = options.End;
 
             return GetAsync<List<OhlcvRecord>>($"/networks/{networkId}/pools/{poolAddress}/ohlcv", queryParams);
         }
@@ -194,13 +192,13 @@ namespace DexPaprika.SDK.Api
 
             var queryParams = new Dictionary<string, object>
             {
-                ["page"] = options.Page,
-                ["limit"] = options.Limit
+                [GetTxsOptions.Params.Page] = options.Page,
+                [GetTxsOptions.Params.Limit] = options.Limit,
             };
 
-            if (options.Cursor != null) queryParams["cursor"] = options.Cursor;
-            if (options.From.HasValue) queryParams["from"] = options.From.Value;
-            if (options.To.HasValue) queryParams["to"] = options.To.Value;
+            if (options.Cursor != null) queryParams[GetTxsOptions.Params.Cursor] = options.Cursor;
+            if (options.From.HasValue) queryParams[GetTxsOptions.Params.From] = options.From.Value;
+            if (options.To.HasValue) queryParams[GetTxsOptions.Params.To] = options.To.Value;
 
             return GetAsync<PoolTransactionsResponse>($"/networks/{networkId}/pools/{poolAddress}/transactions", queryParams);
         }
@@ -223,6 +221,23 @@ namespace DexPaprika.SDK.Api
                 public const int Limit = 10;
                 public const string SortBy = "volume_24h";
                 public const string SortDir = "desc";
+            }
+            public new static class Params
+            {
+                public const string Page = "page";
+                public const string Limit = "limit";
+                public const string SortBy = "sort_by";
+                public const string SortDir = "sort_dir";
+
+                public const string Volume24hMin = "volume_24h_min";
+                public const string Volume24hMax = "volume_24h_max";
+                public const string Volume7dMin = "volume_7d_min";
+                public const string Volume7dMax = "volume_7d_max";
+                public const string LiquidityUsdMin = "liquidity_usd_min";
+                public const string LiquidityUsdMax = "liquidity_usd_max";
+                public const string Txns24hMin = "txns_24h_min";
+                public const string CreatedAfter = "created_after";
+                public const string CreatedBefore = "created_before";
             }
 
             /// <summary>Page number (1-indexed).</summary>
@@ -262,6 +277,13 @@ namespace DexPaprika.SDK.Api
                 public const string Sort = "desc";
                 public const string OrderBy = "volume_usd";
             }
+            public new static class Params
+            {
+                public const string Page = "page";
+                public const string Limit = "limit";
+                public const string Sort = "sort";
+                public const string OrderBy = "order_by";            
+            }
 
             public int Page { get; set; } = Defaults.Page;
             public int Limit { get; set; } = Defaults.Limit;
@@ -275,19 +297,31 @@ namespace DexPaprika.SDK.Api
             {
                 public const bool Inversed = false;
             }
+            public new static class Params 
+            {
+                public const string Inversed = "inversed";
+            }
 
             public bool Inversed { get; set; } = Defaults.Inversed;
         }
-        public class GetOhlcvOptions : Options
+        public class GetOhlcvOptions(string start) : Options
         {
-            public new static readonly GetOhlcvOptions _Default = new();
             public new static class Defaults 
             {
                 public const int Limit = 1;
                 public const string Interval = "24h";
                 public const bool Inversed = false;
             }
+            public new static class Params
+            {
+                public const string Start = "start";
+                public const string End = "page";
+                public const string Limit = "limit";
+                public const string Interval = "sort";
+                public const string Inversed = "order_by";
+            }
 
+            public string Start { get; set; } = start;
             public string? End { get; set; }
             public int Limit { get; set; } = Defaults.Limit;
             public string Interval { get; set; } = Defaults.Interval;
@@ -300,6 +334,14 @@ namespace DexPaprika.SDK.Api
             {
                 public const int Limit = 10;
                 public const int Page = 1;
+            }
+            public new static class Params
+            {
+                public const string Cursor = "cursor";
+                public const string From = "page";
+                public const string Limit = "limit";
+                public const string Page = "sort";
+                public const string To = "order_by";
             }
 
             public string? Cursor { get; set; }

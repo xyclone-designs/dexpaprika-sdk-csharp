@@ -21,8 +21,8 @@ namespace DexPaprika.SDK.Api
         public new class Options : BaseApi.Options { }
         public class StatsOptions : Options
         {
-            public new static readonly StatsOptions _Default = new();
             public new static class Defaults { }
+            public new static class Params { }
         }
     }
 }

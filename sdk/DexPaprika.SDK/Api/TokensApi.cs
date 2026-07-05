@@ -1,7 +1,9 @@
+using DexPaprika.SDK.Models;
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using DexPaprika.SDK.Models;
 
 namespace DexPaprika.SDK.Api
 {
@@ -20,20 +22,20 @@ namespace DexPaprika.SDK.Api
         {
             var queryParams = new Dictionary<string, object>
             {
-                ["page"] = options?.Page ?? 1,
-                ["limit"] = options?.Limit ?? 10,
-                ["sort_by"] = options?.SortBy ?? "volume_24h",
-                ["sort_dir"] = options?.SortDir ?? "desc"
+                [FilterOptions.Params.Page] = options?.Page ?? FilterOptions.Defaults.Page,
+                [FilterOptions.Params.Limit] = options?.Limit ??  FilterOptions.Defaults.Limit,
+                [FilterOptions.Params.SortBy] = options?.SortBy ??  FilterOptions.Defaults.SortBy,
+                [FilterOptions.Params.SortDir] = options?.SortDir ??  FilterOptions.Defaults.SortDir
             };
 
-            if (options?.Volume24hMin.HasValue == true) queryParams["volume_24h_min"] = options.Volume24hMin.Value;
-            if (options?.Volume24hMax.HasValue == true) queryParams["volume_24h_max"] = options.Volume24hMax.Value;
-            if (options?.LiquidityUsdMin.HasValue == true) queryParams["liquidity_usd_min"] = options.LiquidityUsdMin.Value;
-            if (options?.FdvMin.HasValue == true) queryParams["fdv_min"] = options.FdvMin.Value;
-            if (options?.FdvMax.HasValue == true) queryParams["fdv_max"] = options.FdvMax.Value;
-            if (options?.Txns24hMin.HasValue == true) queryParams["txns_24h_min"] = options.Txns24hMin.Value;
-            if (options?.CreatedAfter != null) queryParams["created_after"] = options.CreatedAfter;
-            if (options?.CreatedBefore != null) queryParams["created_before"] = options.CreatedBefore;
+            if (options?.Volume24hMin.HasValue == true) queryParams[FilterOptions.Params.Volume24hMin] = options.Volume24hMin.Value;
+            if (options?.Volume24hMax.HasValue == true) queryParams[FilterOptions.Params.Volume24hMax] = options.Volume24hMax.Value;
+            if (options?.LiquidityUsdMin.HasValue == true) queryParams[FilterOptions.Params.LiquidityUsdMin] = options.LiquidityUsdMin.Value;
+            if (options?.FdvMin.HasValue == true) queryParams[FilterOptions.Params.FdvMin] = options.FdvMin.Value;
+            if (options?.FdvMax.HasValue == true) queryParams[FilterOptions.Params.FdvMax] = options.FdvMax.Value;
+            if (options?.Txns24hMin.HasValue == true) queryParams[FilterOptions.Params.Txns24hMin] = options.Txns24hMin.Value;
+            if (options?.CreatedAfter != null) queryParams[FilterOptions.Params.CreatedAfter] = options.CreatedAfter;
+            if (options?.CreatedBefore != null) queryParams[FilterOptions.Params.CreatedBefore] = options.CreatedBefore;
 
             // The token filter endpoint wraps rows in a "data" key; remap to "results"
             // to match the shape of other filter endpoints.
@@ -65,14 +67,19 @@ namespace DexPaprika.SDK.Api
         /// <returns>Array of token prices.</returns>
         public Task<List<TokenPrice>> GetMultiPricesAsync(string networkId, IReadOnlyList<string> tokens)
         {
-            if (tokens == null || tokens.Count == 0)
-                throw new ArgumentException("tokens must not be null or empty.", nameof(tokens));
-            if (tokens.Count > 10)
-                throw new ArgumentException("tokens must contain at most 10 addresses.", nameof(tokens));
-
+            return GetMultiPricesAsync(networkId, new GetMultiPricesOptions(tokens));
+        }
+        /// <summary>
+        /// Gets batch prices for multiple tokens on a network.
+        /// </summary>
+        /// <param name="networkId">Network ID (e.g., "ethereum", "solana").</param>
+        /// <param name="tokens">Array of token addresses (max 10).</param>
+        /// <returns>Array of token prices.</returns>
+        public Task<List<TokenPrice>> GetMultiPricesAsync(string networkId, GetMultiPricesOptions options)
+        {
             var queryParams = new Dictionary<string, object>
             {
-                ["tokens"] = string.Join(",", tokens)
+                [GetMultiPricesOptions.Params.Tokens] = string.Join(",", options.Tokens)
             };
 
             return GetAsync<List<TokenPrice>>($"/networks/{networkId}/multi/prices", queryParams);
@@ -95,13 +102,13 @@ namespace DexPaprika.SDK.Api
 
             var queryParams = new Dictionary<string, object>
             {
-                ["page"] = options.Page,
-                ["limit"] = options.Limit,
-                ["sort"] = options.Sort,
-                ["order_by"] = options.OrderBy
+                [GetPoolsOptions.Params.Page] = options.Page,
+                [GetPoolsOptions.Params.Limit] = options.Limit,
+                [GetPoolsOptions.Params.Sort] = options.Sort,
+                [GetPoolsOptions.Params.OrderBy] = options.OrderBy
             };
 
-            if (options.PairWith is not null) queryParams["address"] = options.PairWith;
+            if (options.PairWith is not null) queryParams[GetPoolsOptions.Params.PairWith] = options.PairWith;
 
             return GetAsync<PoolPaginatedResponse>($"/networks/{networkId}/tokens/{tokenAddress}/pools", queryParams);
         }
@@ -121,16 +128,19 @@ namespace DexPaprika.SDK.Api
 
             var queryParams = new Dictionary<string, object>
             {
-                ["page"] = options.Page,
-                ["limit"] = options.Limit,
-                ["order_by"] = options.OrderBy,
-                ["sort"] = options.Sort
+                [GetTopOptions.Params.Page] = options.Page,
+                [GetTopOptions.Params.Limit] = options.Limit,
+                [GetTopOptions.Params.OrderBy] = options.OrderBy,
+                [GetTopOptions.Params.Sort] = options.Sort
             };
 
             return GetAsync<TopTokensPaginatedResponse>($"/networks/{networkId}/tokens/top", queryParams);
         }
 
-        public new class Options : BaseApi.Options { }
+        public new class Options : BaseApi.Options 
+        {
+            public new static class Params { }
+        }
 
         public class FilterOptions : BaseApi.Options
         {
@@ -141,6 +151,22 @@ namespace DexPaprika.SDK.Api
                 public const int Limit = 10;
                 public const string SortBy = "volume_24h";
                 public const string SortDir = "desc";
+            }
+            public new static class Params
+            {
+                public const string Page = "page";
+                public const string Limit = "limit";
+                public const string SortBy = "sort_by";
+                public const string SortDir = "sort_dir";
+
+                public const string Volume24hMin = "volume_24h_min";
+                public const string Volume24hMax = "volume_24h_max";
+                public const string LiquidityUsdMin = "liquidity_usd_min";
+                public const string FdvMin = "fdv_min";
+                public const string FdvMax = "fdv_max";
+                public const string Txns24hMin = "txns_24h_min";
+                public const string CreatedAfter = "created_after";
+                public const string CreatedBefore = "created_before";
             }
 
             /// <summary>Page number (1-indexed).</summary>
@@ -168,21 +194,29 @@ namespace DexPaprika.SDK.Api
             /// <summary>Only include tokens created before this Unix timestamp (or ISO string).</summary>
             public object? CreatedBefore { get; set; }
         }
-        public class ListByNetworkOptions : Options
+        public class GetMultiPricesOptions : Options
         {
-            public new static readonly ListByNetworkOptions _Default = new();
-            public new static class Defaults
+            public new static readonly GetPoolsOptions _Default = new();
+            public new static class Defaults { }
+            public new static class Params
             {
-                public const int Page = 1;
-                public const int Limit = 10;
-                public const string Sort = "desc";
-                public const string OrderBy = "volume_usd";
+                public const string Tokens = "tokens";
             }
 
-            public int Page { get; set; } = Defaults.Page;
-            public int Limit { get; set; } = Defaults.Limit;
-            public string Sort { get; set; } = Defaults.Sort;
-            public string OrderBy { get; set; } = Defaults.OrderBy;
+            public GetMultiPricesOptions(params string[] tokens) : this(tokens as IEnumerable<string>) { }
+            public GetMultiPricesOptions(IEnumerable<string> tokens)
+            {
+                int count = tokens.Count();
+
+                if (count == 0)
+                    throw new ArgumentException("tokens must not be empty.", nameof(tokens));
+                if (count > 10)
+                    throw new ArgumentException("tokens must contain at most 10 addresses.", nameof(tokens));
+
+                Tokens = [.. tokens];
+            }
+
+            public IReadOnlyList<string> Tokens { get; set; }
         }
         public class GetPoolsOptions : Options
         {
@@ -193,6 +227,14 @@ namespace DexPaprika.SDK.Api
                 public const string OrderBy = "volume_usd";
                 public const int Page = 0;
                 public const string Sort = "desc";
+            }
+            public new static class Params
+            {
+                public const string Page = "page";
+                public const string Limit = "limit";
+                public const string Sort = "sort";
+                public const string OrderBy = "order_by";            
+                public const string PairWith = "address";            
             }
 
             public int Limit { get; set; } = Defaults.Limit;
@@ -210,6 +252,13 @@ namespace DexPaprika.SDK.Api
                 public const string OrderBy = "volume_24h";
                 public const int Page = 1;
                 public const string Sort = "desc";
+            }
+            public new static class Params
+            {
+                public const string Page = "page";
+                public const string Limit = "limit";
+                public const string OrderBy = "order_by";
+                public const string Sort = "sort";
             }
 
             public int Limit { get; set; } = Defaults.Limit;
